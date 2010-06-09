@@ -3,6 +3,7 @@ h.load_file('stdlib.hoc') #for h.lambda_f
 
 class BallStick(object):
   def __init__(self):
+    #print 'construct ', self
     self.topol()
     self.subsets()
     self.geom()
@@ -11,6 +12,10 @@ class BallStick(object):
     self.synlist = []
     self.synapses()
     self.x = self.y = self.z = 0.
+
+  def __del__(self):
+    #print 'delete ', self
+    pass
 
   def topol(self):
     self.soma = h.Section(name='soma', cell=self)
