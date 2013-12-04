@@ -46,6 +46,7 @@ mkring(NCELL)
 #Instrumentation - stimulation and recording
 
 def mkstim():
+  ''' stimulate gid 0 with NetStim to start ring '''
   global stim, ncstim
   if not pc.gid_exists(0):
     return
@@ -59,27 +60,21 @@ def mkstim():
 mkstim()
 
 def spike_record():
-  global tvec, idvec, cells
+  ''' record spikes from all gids '''
+  global tvec, idvec
   tvec = h.Vector()
   idvec = h.Vector()
-  for i in range(len(cells)):
-    nc = cells[i].connect2target(None)
-    pc.spike_record(nc.srcgid(), tvec, idvec)
-
-spike_record()
-
-# simulation control
+  pc.spike_record(-1, tvec, idvec)
 
 def prun(tstop):
+  ''' simulation control '''
   pc.set_maxstep(10)
   h.stdinit()
   pc.psolve(tstop)
 
-prun(100)
-
-# report simulation results
 
 def spikeout():
+  ''' report simulation results to stdout '''
   global rank, tvec, idvec
   pc.barrier()
   for i in range(nhost):
@@ -88,10 +83,17 @@ def spikeout():
         print '%g %d' % (tvec.x[i], int(idvec.x[i]))
     pc.barrier()
 
-spikeout()
 
-# quit
-pc.runworker()
-pc.done()
-h.quit()
+def finish():
+  ''' proper exit '''
+  pc.runworker()
+  pc.done()
+  h.quit()
+
+if __name__ == '__main__':
+  spike_record()
+  prun(100)
+  spikeout()
+  if (nhost > 1):
+    finish()
 
