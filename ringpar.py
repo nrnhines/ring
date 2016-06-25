@@ -80,7 +80,7 @@ def spikeout():
   for i in range(nhost):
     if i == rank:
       for i in range(len(tvec)):
-        print '%g %d' % (tvec.x[i], int(idvec.x[i]))
+        print('%g %d' % (tvec.x[i], int(idvec.x[i])))
     pc.barrier()
 
 
