@@ -11,6 +11,7 @@ from cell import BallStick
 NCELL = 20
 
 cells = []
+rgen = {}
 nclist = []
 
 def mkring(ncell):
@@ -18,9 +19,13 @@ def mkring(ncell):
   connectcells()
 
 def mkcells(ncell):
-  global cells, rank, nhost
+  global cells, rank, nhost, rgen
   cells = []
   for i in range(rank, ncell, nhost):
+    r = h.Random()
+    r.Random123(i)
+    r.uniform(0.005, 0.01)
+    rgen[i] = r
     cell = BallStick()
     cells.append(cell)
     pc.set_gid2node(i, rank)
@@ -34,12 +39,13 @@ def connectcells():
   for i in range(NCELL):
     targid = (i+1)%NCELL
     if pc.gid_exists(targid):
+      r = rgen[targid]
       target = pc.gid2cell(targid)
       syn = target.synlist[0]
       nc = pc.gid_connect(i, syn)
       nclist.append(nc)
       nc.delay = 1
-      nc.weight[0] = 0.01
+      nc.weight[0] = r.repick()
 
 mkring(NCELL)
 
@@ -72,15 +78,17 @@ def prun(tstop):
   h.stdinit()
   pc.psolve(tstop)
 
-
 def spikeout():
   ''' report simulation results to stdout '''
   global rank, tvec, idvec
   pc.barrier()
+  fname = 'out%d.dat'%nhost
   for i in range(nhost):
     if i == rank:
-      for i in range(len(tvec)):
-        print('%g %d' % (tvec.x[i], int(idvec.x[i])))
+      f = open(fname, "a" if i else "w")
+      for j in range(len(tvec)):
+        f.write('%g %d\n' % (tvec.x[j], int(idvec.x[j])))
+      f.close()
     pc.barrier()
 
 
