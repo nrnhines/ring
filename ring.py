@@ -79,4 +79,4 @@ def runring(ncell=5, delay=1, tstop=100):
   pc.allgather(ring.tvec.x[-1], tt)
   pc.allgather(ring.idvec.x[-1], idv)
   idmax = int(idv.x[int(tt.max_ind())])
-  return (int(spkcnt), tmax, idmax, (ncell, delay, tstop, (rank, nhost)))
+  return (int(spkcnt), tmax, idmax, (ncell, delay, tstop, (pc.id_world(), pc.nhost_world())))
